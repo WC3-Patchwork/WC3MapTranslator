@@ -94,72 +94,71 @@ describe('HexBuffer', () => {
         ];
 
         let totalLength = 0;
-        // tslint:disable-next-line: forin
         for (const word of testWords) {
             const bufLength = Buffer.from(word).length;
             hexBuffer.addString(word);
             totalLength += bufLength + 1; // adding one accounts for the null terminator at the end of the string
             const bufferLength = hexBuffer.getBuffer().length;
-            assert.equal(bufferLength, totalLength);
+            assert.strictEqual(bufferLength, totalLength);
         }
     });
 
     it('should addNewLine', () => {
         hexBuffer.addNewLine();
-        assert.equal(hexBuffer.getBuffer().length, 2);
-        assert.equal(hexBuffer.getBuffer()[0], 0x0d);
-        assert.equal(hexBuffer.getBuffer()[1], 0x0a);
+        assert.strictEqual(hexBuffer.getBuffer().length, 2);
+        assert.strictEqual(hexBuffer.getBuffer()[0], 0x0d);
+        assert.strictEqual(hexBuffer.getBuffer()[1], 0x0a);
     });
 
     it('should addChar', () => {
         hexBuffer.addChar('A');
-        assert.equal(hexBuffer.getBuffer().length, 1);
-        assert.equal(hexBuffer.getBuffer()[0], 65); // charcode for the ASCII letter "A"
+        assert.strictEqual(hexBuffer.getBuffer().length, 1);
+        assert.strictEqual(hexBuffer.getBuffer()[0], 65); // charcode for the ASCII letter "A"
     });
 
     it('should addChars', () => {
         hexBuffer.addChars('ABCD');
-        assert.equal(hexBuffer.getBuffer().length, 4);
-        assert.equal(hexBuffer.getBuffer()[0], 65); // charcode for the ASCII letter "A"
-        assert.equal(hexBuffer.getBuffer()[1], 66); // charcode for the ASCII letter "B"
-        assert.equal(hexBuffer.getBuffer()[2], 67); // charcode for the ASCII letter "C"
-        assert.equal(hexBuffer.getBuffer()[3], 68); // charcode for the ASCII letter "D"
+        assert.strictEqual(hexBuffer.getBuffer().length, 4);
+        assert.strictEqual(hexBuffer.getBuffer()[0], 65); // charcode for the ASCII letter "A"
+        assert.strictEqual(hexBuffer.getBuffer()[1], 66); // charcode for the ASCII letter "B"
+        assert.strictEqual(hexBuffer.getBuffer()[2], 67); // charcode for the ASCII letter "C"
+        assert.strictEqual(hexBuffer.getBuffer()[3], 68); // charcode for the ASCII letter "D"
     });
 
     it('should addInt', () => {
         hexBuffer.addInt(0);
-        assert.equal(hexBuffer.getBuffer().length, 4); // integer is 4 bytes in length
-        assert.equal(hexBuffer.getBuffer()[0], 0x00);
-        assert.equal(hexBuffer.getBuffer()[1], 0x00);
-        assert.equal(hexBuffer.getBuffer()[2], 0x00);
-        assert.equal(hexBuffer.getBuffer()[3], 0x00);
+        assert.strictEqual(hexBuffer.getBuffer().length, 4); // integer is 4 bytes in length
+        assert.strictEqual(hexBuffer.getBuffer()[0], 0x00);
+        assert.strictEqual(hexBuffer.getBuffer()[1], 0x00);
+        assert.strictEqual(hexBuffer.getBuffer()[2], 0x00);
+        assert.strictEqual(hexBuffer.getBuffer()[3], 0x00);
     });
 
     it('should addShort', () => {
         hexBuffer.addShort(14);
-        assert.equal(hexBuffer.getBuffer().length, 2); // 2 bytes in length
-        assert.equal(hexBuffer.getBuffer()[0], 0x0e);
-        assert.equal(hexBuffer.getBuffer()[1], 0x00);
+        assert.strictEqual(hexBuffer.getBuffer().length, 2); // 2 bytes in length
+        assert.strictEqual(hexBuffer.getBuffer()[0], 0x0e);
+        assert.strictEqual(hexBuffer.getBuffer()[1], 0x00);
     });
 
     it('should addFloat', () => {
         hexBuffer.addFloat(1.234);
-        assert.equal(hexBuffer.getBuffer().length, 4); // 4 bytes in length
-        assert.equal(hexBuffer.getBuffer()[0], 0xb6);
-        assert.equal(hexBuffer.getBuffer()[1], 0xf3);
-        assert.equal(hexBuffer.getBuffer()[2], 0x9d);
-        assert.equal(hexBuffer.getBuffer()[3], 0x3f);
+        assert.strictEqual(hexBuffer.getBuffer().length, 4); // 4 bytes in length
+        assert.strictEqual(hexBuffer.getBuffer()[0], 0xb6);
+        assert.strictEqual(hexBuffer.getBuffer()[1], 0xf3);
+        assert.strictEqual(hexBuffer.getBuffer()[2], 0x9d);
+        assert.strictEqual(hexBuffer.getBuffer()[3], 0x3f);
     });
 
     it('should addByte', () => {
         hexBuffer.addByte(15);
-        assert.equal(hexBuffer.getBuffer()[0], 15);
+        assert.strictEqual(hexBuffer.getBuffer()[0], 15);
     });
 
     it('should addNullTerminator', () => {
         hexBuffer.addNullTerminator();
-        assert.equal(hexBuffer.getBuffer().length, 1);
-        assert.equal(hexBuffer.getBuffer()[0], 0);
+        assert.strictEqual(hexBuffer.getBuffer().length, 1);
+        assert.strictEqual(hexBuffer.getBuffer()[0], 0);
     });
 
     it('should getBuffer', () => {

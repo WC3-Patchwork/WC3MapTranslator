@@ -1,9 +1,29 @@
 import { HexBuffer } from '../HexBuffer';
-import { WarResult, JsonResult } from '../CommonInterfaces'
+import { type WarResult, type JsonResult } from '../CommonInterfaces';
+import type Translator from './Translator';
 
-export abstract class StringsTranslator {
+export class StringsTranslator implements Translator<object> {
 
-    public static jsonToWar(stringsJson: object): WarResult {
+    private static instance: StringsTranslator;
+
+    private constructor() {}
+
+    public static getInstance() {
+        if (!this.instance) {
+            this.instance = new this();
+        }
+        return this.instance;
+    }
+
+    public static jsonToWar(string: object): WarResult {
+        return this.getInstance().jsonToWar(string);
+    }
+
+    public static warToJson(buffer: Buffer): JsonResult<object> {
+        return this.getInstance().warToJson(buffer);
+    }
+
+    public jsonToWar(stringsJson: object): WarResult {
         const outBufferToWar = new HexBuffer();
 
         /*
@@ -14,7 +34,7 @@ export abstract class StringsTranslator {
             outBufferToWar.addNewLine();
             outBufferToWar.addChars('{');
             outBufferToWar.addNewLine();
-            outBufferToWar.addChars(stringsJson[key]);
+            outBufferToWar.addChars(stringsJson[key] as unknown as string);
             outBufferToWar.addNewLine();
             outBufferToWar.addChars('}');
             outBufferToWar.addNewLine();
@@ -27,17 +47,16 @@ export abstract class StringsTranslator {
         };
     }
 
-    public static warToJson(buffer: Buffer): JsonResult<object> {
-        const wts = buffer.toString().replace(/\r\n/g, '\n'), // may contain Windows linebreaks (\r\n), but below regex just assumes \n
-            matchStringDefinitionBlock = new RegExp('STRING ([0-9]+)\n?(?:.*\n)?\{\n((?:.|\n)*?)\n}', 'g'); // see: https://regexr.com/3r572
+    public warToJson(buffer: Buffer): JsonResult<object> {
+        const wts = buffer.toString().replace(/\r\n/g, '\n'); // may contain Windows linebreaks (\r\n), but below regex just assumes \n
+        const matchStringDefinitionBlock = /STRING ([0-9]+)\n?(?:.*\n)?{\n((?:.|\n)*?)\n}/g; // see: https://regexr.com/3r572
 
         const result = {}; // stores the json form of strings file
-        let match; // stores individual matches as input is read
+        let match: RegExpExecArray | null; // stores individual matches as input is read
 
-        // tslint:disable-next-line: no-conditional-assignment
         while ((match = matchStringDefinitionBlock.exec(wts)) !== null) {
-            const num = match[1],
-                body = match[2];
+            const num = match[1];
+            const body = match[2];
             result[num] = body;
         }
 

@@ -1,6 +1,7 @@
 import { HexBuffer } from '../HexBuffer';
 import { W3Buffer } from '../W3Buffer';
-import { WarResult, JsonResult } from '../CommonInterfaces'
+import { type WarResult, type JsonResult } from '../CommonInterfaces';
+import type Translator from './Translator';
 
 interface Region {
     position: Rect;
@@ -18,9 +19,28 @@ interface Rect {
     top: number;
 }
 
-export abstract class RegionsTranslator {
+export class RegionsTranslator implements Translator<Region[]> {
 
-    public static jsonToWar(regionsJson: Region[]): WarResult {
+    private static instance: RegionsTranslator;
+
+    private constructor() {}
+
+    public static getInstance() {
+        if (!this.instance) {
+            this.instance = new this();
+        }
+        return this.instance;
+    }
+
+    public static jsonToWar(regions: Region[]): WarResult {
+        return this.getInstance().jsonToWar(regions);
+    }
+
+    public static warToJson(buffer: Buffer): JsonResult<Region[]> {
+        return this.getInstance().warToJson(buffer);
+    }
+
+    public jsonToWar(regionsJson: Region[]): WarResult {
         const outBufferToWar = new HexBuffer();
 
         /*
@@ -74,12 +94,12 @@ export abstract class RegionsTranslator {
         };
     }
 
-    public static warToJson(buffer: Buffer): JsonResult<Region[]> {
-        const result = [];
+    public warToJson(buffer: Buffer): JsonResult<Region[]> {
+        const result: Region[] = [];
         const outBufferToJSON = new W3Buffer(buffer);
 
-        const fileVersion = outBufferToJSON.readInt(), // File version
-            numRegions = outBufferToJSON.readInt(); // # of regions
+        const fileVersion = outBufferToJSON.readInt(); // File version
+        const numRegions = outBufferToJSON.readInt(); // # of regions
 
         for (let i = 0; i < numRegions; i++) {
             const region: Region = {

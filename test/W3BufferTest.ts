@@ -19,28 +19,28 @@ const w3buffer = new W3Buffer(buffData);
 describe('W3Buffer', () => {
 
     it('should readInt', () => {
-        assert.equal(w3buffer.readInt(), 1);
+        assert.strictEqual(w3buffer.readInt(), 1);
     });
 
     it('should readShort', () => {
-        assert.equal(w3buffer.readShort(), 28801);
+        assert.strictEqual(w3buffer.readShort(), 28801);
     });
 
     it('should readFloat', () => {
-        assert.equal(w3buffer.readFloat(), -4960);
+        assert.strictEqual(w3buffer.readFloat(), -4960);
     });
 
     it('should readString', () => {
-        assert.equal(w3buffer.readString(), 'WWWWWWW');
+        assert.strictEqual(w3buffer.readString(), 'WWWWWWW');
     });
 
     it('should readChars', () => {
-        assert.equal(w3buffer.readChars(4), 'W3do');
-        assert.equal(w3buffer.readChars(), 'W')
+        assert.strictEqual(w3buffer.readChars(4), 'W3do');
+        assert.strictEqual(w3buffer.readChars(), 'W')
     });
 
     it('should readByte', () => {
-        assert.equal(w3buffer.readByte(), 2);
+        assert.strictEqual(w3buffer.readByte(), 2);
     });
 
     it('should be exhausted', () => {

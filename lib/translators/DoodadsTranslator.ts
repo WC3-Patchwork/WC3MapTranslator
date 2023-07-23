@@ -1,7 +1,8 @@
 import { HexBuffer } from '../HexBuffer';
 import { W3Buffer } from '../W3Buffer';
 import { rad2Deg, deg2Rad } from '../AngleConverter';
-import { WarResult, JsonResult, angle } from '../CommonInterfaces'
+import { type WarResult, type JsonResult, type angle } from '../CommonInterfaces';
+import type Translator from './Translator';
 
 interface Doodad {
     type: string;
@@ -16,8 +17,8 @@ interface Doodad {
 }
 
 interface DoodadFlag {
-    visible: any;
-    solid: any;
+    visible: boolean;
+    solid: boolean;
 }
 
 enum flag {
@@ -25,13 +26,32 @@ enum flag {
     // 1= visible but non-solid tree
     // 2= normal tree (visible and solid)
     undefined = 0,
-    visible = 1 || 2,
-    solid = 3
+    visible = 1,
+    solid = 2
 }
 
-export abstract class DoodadsTranslator {
+export class DoodadsTranslator implements Translator<Doodad[]> {
 
-    public static jsonToWar(doodadsJson: Doodad[]): WarResult {
+    private static instance: DoodadsTranslator;
+
+    private constructor() {}
+
+    public static getInstance() {
+        if (!this.instance) {
+            this.instance = new this();
+        }
+        return this.instance;
+    }
+
+    public static jsonToWar(doodads: Doodad[]): WarResult {
+        return this.getInstance().jsonToWar(doodads);
+    }
+
+    public static warToJson(buffer: Buffer): JsonResult<Doodad[]> {
+        return this.getInstance().warToJson(buffer);
+    }
+
+    public jsonToWar(doodadsJson: Doodad[]): WarResult {
         const outBufferToWar = new HexBuffer();
         /*
          * Header
@@ -97,8 +117,8 @@ export abstract class DoodadsTranslator {
         };
     }
 
-    public static warToJson(buffer: Buffer): JsonResult<Doodad[]> {
-        const result = [];
+    public warToJson(buffer: Buffer): JsonResult<Doodad[]> {
+        const result: Doodad[] = [];
         const outBufferToJSON = new W3Buffer(buffer);
 
         const fileId = outBufferToJSON.readChars(4); // W3do for doodad file
@@ -114,7 +134,7 @@ export abstract class DoodadsTranslator {
                 angle: -1,
                 scale: [0, 0, 0],
                 skinId: '',
-                flags: { visible: flag.visible, solid: flag.solid },
+                flags: { visible: true, solid: true },
                 life: -1,
                 id: -1
             };

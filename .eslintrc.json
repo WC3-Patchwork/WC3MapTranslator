@@ -1,0 +1,43 @@
+{
+    "env": {
+        "node": true
+    },
+    "parser": "@typescript-eslint/parser",
+    "plugins": ["@typescript-eslint"],
+    "parserOptions": {
+        "sourceType": "module",
+        "project": true
+    },
+    "extends": [
+        "standard-with-typescript",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/recommended-requiring-type-checking"
+    ],
+    "overrides": [
+        {
+            "files": ["*.ts", "*.tsx"]
+        }
+    ],
+    "rules": {
+        "@typescript-eslint/indent": ["error", 4],
+        "no-empty": 0,
+        "no-bitwise": 0,
+        "object-literal-sort-keys": 0,
+        "variable-name": 0,
+        "align": [0, "parameters"],
+        "max-line-length": [0],
+        "no-console": [0, "log", "error"],
+        "no-var-requires": 0,
+        "@typescript-eslint/quotes": [2, "single"],
+        "@typescript-eslint/semi": [2, "always"],
+        "@typescript-eslint/space-before-function-paren": [0],
+        "@typescript-eslint/explicit-function-return-type": [0],
+        "@typescript-eslint/member-delimiter-style": [0],
+        "@typescript-eslint/strict-boolean-expressions": [0],
+        "@typescript-eslint/no-empty-function": [0],
+        "@typescript-eslint/key-spacing": [0],
+
+        "padded-blocks":0,
+        "one-variable-per-declaration": 0
+    }
+}

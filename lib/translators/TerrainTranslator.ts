@@ -1,6 +1,7 @@
 import { HexBuffer } from '../HexBuffer';
 import { W3Buffer } from '../W3Buffer';
-import { WarResult, JsonResult } from '../CommonInterfaces'
+import { type WarResult, type JsonResult } from '../CommonInterfaces';
+import type Translator from './Translator';
 
 interface Terrain {
     tileset: string;
@@ -9,15 +10,15 @@ interface Terrain {
     cliffTilePalette: string[];
     map: Map;
     // "Masks"
-    groundHeight: number[],
-    waterHeight: number[],
-    boundaryFlag: boolean[],
+    groundHeight: number[][],
+    waterHeight: number[][],
+    boundaryFlag: boolean[][],
     flags: number[],
-    groundTexture: number[],
-    groundVariation: number[],
-    cliffVariation: number[],
-    cliffTexture: number[],
-    layerHeight: number[]
+    groundTexture: number[][],
+    groundVariation: number[][],
+    cliffVariation: number[][],
+    cliffTexture: number[][],
+    layerHeight: number[][]
 }
 
 interface Map {
@@ -31,17 +32,36 @@ interface Offset {
     y: number;
 }
 
-function splitLargeArrayIntoWidthArrays(array: any[], width: number) {
-    const rows = [];
-    for(let i = 0; i < array.length / width; i++) {
-        rows.push(array.slice(i * width, (i+1) * width));
+function splitLargeArrayIntoWidthArrays(array: unknown[], width: number) {
+    const rows: unknown[][] = [];
+    for (let i = 0; i < array.length / width; i++) {
+        rows.push(array.slice(i * width, (i + 1) * width));
     }
     return rows;
 }
 
-export abstract class TerrainTranslator {
+export class TerrainTranslator implements Translator<Terrain> {
 
-    public static jsonToWar(terrainJson: Terrain): WarResult {
+    private static instance: TerrainTranslator;
+
+    private constructor() {}
+
+    public static getInstance() {
+        if (!this.instance) {
+            this.instance = new this();
+        }
+        return this.instance;
+    }
+
+    public static jsonToWar(terrain: Terrain): WarResult {
+        return this.getInstance().jsonToWar(terrain);
+    }
+
+    public static warToJson(buffer: Buffer): JsonResult<Terrain> {
+        return this.getInstance().warToJson(buffer);
+    }
+
+    public jsonToWar(terrainJson: Terrain): WarResult {
         const outBufferToWar = new HexBuffer();
 
         /*
@@ -86,15 +106,20 @@ export abstract class TerrainTranslator {
         // Partition the terrainJson masks into "chunks" (i.e. rows) of (width+1) length,
         // reverse that list of rows (due to vertical flipping), and then write the rows out
         const rows = {
-            groundHeight: splitLargeArrayIntoWidthArrays(terrainJson.groundHeight, terrainJson.map.width + 1),
-            waterHeight: splitLargeArrayIntoWidthArrays(terrainJson.waterHeight, terrainJson.map.width + 1),
-            boundaryFlag: splitLargeArrayIntoWidthArrays(terrainJson.boundaryFlag, terrainJson.map.width + 1),
-            flags: splitLargeArrayIntoWidthArrays(terrainJson.flags, terrainJson.map.width + 1),
-            groundTexture: splitLargeArrayIntoWidthArrays(terrainJson.groundTexture, terrainJson.map.width + 1),
-            groundVariation: splitLargeArrayIntoWidthArrays(terrainJson.groundVariation, terrainJson.map.width + 1),
-            cliffVariation: splitLargeArrayIntoWidthArrays(terrainJson.cliffVariation, terrainJson.map.width + 1),
-            cliffTexture: splitLargeArrayIntoWidthArrays(terrainJson.cliffTexture, terrainJson.map.width + 1),
-            layerHeight: splitLargeArrayIntoWidthArrays(terrainJson.layerHeight, terrainJson.map.width + 1)
+            groundHeight: splitLargeArrayIntoWidthArrays(terrainJson.groundHeight, terrainJson.map.width + 1) as number[][],
+            waterHeight: splitLargeArrayIntoWidthArrays(terrainJson.waterHeight, terrainJson.map.width + 1) as number[][],
+            boundaryFlag: splitLargeArrayIntoWidthArrays(terrainJson.boundaryFlag, terrainJson.map.width + 1) as boolean[][],
+            flags: splitLargeArrayIntoWidthArrays(terrainJson.flags, terrainJson.map.width + 1) as number[][],
+            groundTexture: splitLargeArrayIntoWidthArrays(terrainJson.groundTexture, terrainJson.map.width + 1) as number[][],
+            groundVariation: splitLargeArrayIntoWidthArrays(terrainJson.groundVariation, terrainJson.map.width + 1) as number[][],
+            cliffVariation: splitLargeArrayIntoWidthArrays(terrainJson.cliffVariation, terrainJson.map.width + 1) as number[][],
+            cliffTexture: splitLargeArrayIntoWidthArrays(terrainJson.cliffTexture, terrainJson.map.width + 1) as number[][],
+            layerHeight: splitLargeArrayIntoWidthArrays(terrainJson.layerHeight, terrainJson.map.width + 1) as number[][],
+            tileset: '',
+            customTileset: false,
+            tilePalette: [],
+            cliffTilePalette: [],
+            map: undefined
         };
 
         rows.groundHeight.reverse();
@@ -107,8 +132,8 @@ export abstract class TerrainTranslator {
         rows.cliffTexture.reverse();
         rows.layerHeight.reverse();
 
-        for(let i = 0; i < rows.groundHeight.length; i++) {
-            for(let j = 0; j < rows.groundHeight[i].length; j++) {
+        for (let i = 0; i < rows.groundHeight.length; i++) {
+            for (let j = 0; j < rows.groundHeight[i].length; j++) {
                 // these bit operations are based off documentation from https://github.com/stijnherfst/HiveWE/wiki/war3map.w3e-Terrain
                 const groundHeight = rows.groundHeight[i][j];
                 const waterHeight = rows.waterHeight[i][j];
@@ -136,7 +161,7 @@ export abstract class TerrainTranslator {
         };
     }
 
-    public static warToJson(buffer: Buffer): JsonResult<Terrain> {
+    public warToJson(buffer: Buffer): JsonResult<Terrain> {
         // create buffer
         const result: Terrain = {
             tileset: '',
@@ -178,7 +203,7 @@ export abstract class TerrainTranslator {
          * Tiles
          */
         const numTilePalettes = outBufferToJSON.readInt();
-        const tilePalettes = [];
+        const tilePalettes: string[] = [];
         for (let i = 0; i < numTilePalettes; i++) {
             tilePalettes.push(outBufferToJSON.readChars(4));
         }
@@ -189,7 +214,7 @@ export abstract class TerrainTranslator {
          * Cliffs
          */
         const numCliffTilePalettes = outBufferToJSON.readInt();
-        const cliffPalettes = [];
+        const cliffPalettes: string[] = [];
         for (let i = 0; i < numCliffTilePalettes; i++) {
             const cliffPalette = outBufferToJSON.readChars(4);
             cliffPalettes.push(cliffPalette);
@@ -211,17 +236,17 @@ export abstract class TerrainTranslator {
         /**
          * map tiles
          */
-        const arr_groundHeight = [];
-        const arr_waterHeight = [];
-        const arr_boundaryFlag = [];
-        const arr_flags = [];
-        const arr_groundTexture = [];
-        const arr_groundVariation = [];
-        const arr_cliffVariation = [];
-        const arr_cliffTexture = [];
-        const arr_layerHeight = [];
+        const arrGroundHeight: number[] = [];
+        const arrWaterHeight: number[] = [];
+        const arrBoundaryFlag: boolean[] = [];
+        const arrFlags: number[] = [];
+        const arrGroundTexture: number[] = [];
+        const arrGroundVariation: number[] = [];
+        const arrCliffVariation: number[] = [];
+        const arrCliffTexture: number[] = [];
+        const arrLayerHeight: number[] = [];
 
-        while(!outBufferToJSON.isExhausted()) {
+        while (!outBufferToJSON.isExhausted()) {
             const groundHeight = outBufferToJSON.readShort();
             const waterHeightAndBoundary = outBufferToJSON.readShort();
             const flagsAndGroundTexture = outBufferToJSON.readByte();
@@ -238,35 +263,35 @@ export abstract class TerrainTranslator {
             const cliffTexture = cliffTextureAndLayerHeight & 240;
             const layerHeight = cliffTextureAndLayerHeight & 15;
 
-            arr_groundHeight.push(groundHeight);
-            arr_waterHeight.push(waterHeight);
-            arr_boundaryFlag.push(boundaryFlag);
-            arr_flags.push(flags);
-            arr_groundTexture.push(groundTexture);
-            arr_groundVariation.push(groundVariation);
-            arr_cliffVariation.push(cliffVariation);
-            arr_cliffTexture.push(cliffTexture);
-            arr_layerHeight.push(layerHeight);
+            arrGroundHeight.push(groundHeight);
+            arrWaterHeight.push(waterHeight);
+            arrBoundaryFlag.push(boundaryFlag);
+            arrFlags.push(flags);
+            arrGroundTexture.push(groundTexture);
+            arrGroundVariation.push(groundVariation);
+            arrCliffVariation.push(cliffVariation);
+            arrCliffTexture.push(cliffTexture);
+            arrLayerHeight.push(layerHeight);
         }
 
-        function convertArrayOfArraysIntoFlatArray(arr) {
-            return arr.reduce((a, b) => {
-                return [...a, ...b]
+        function convertArrayOfArraysIntoFlatArray(arr: unknown[][]): unknown {
+            return arr.reduce((a: unknown[], b: unknown[]) => {
+                return [...a, ...b];
             });
         }
 
         // The map was read in "backwards" because wc3 maps have origin (0,0)
         // at the bottom left instead of top left as we desire. Flip the rows
         // vertically to fix this.
-        result.groundHeight = convertArrayOfArraysIntoFlatArray(splitLargeArrayIntoWidthArrays(arr_groundHeight, result.map.width + 1).reverse())
-        result.waterHeight = convertArrayOfArraysIntoFlatArray(splitLargeArrayIntoWidthArrays(arr_waterHeight, result.map.width + 1).reverse())
-        result.boundaryFlag = convertArrayOfArraysIntoFlatArray(splitLargeArrayIntoWidthArrays(arr_boundaryFlag, result.map.width + 1).reverse())
-        result.flags = convertArrayOfArraysIntoFlatArray(splitLargeArrayIntoWidthArrays(arr_flags, result.map.width + 1).reverse())
-        result.groundTexture = convertArrayOfArraysIntoFlatArray(splitLargeArrayIntoWidthArrays(arr_groundTexture, result.map.width + 1).reverse())
-        result.groundVariation = convertArrayOfArraysIntoFlatArray(splitLargeArrayIntoWidthArrays(arr_groundVariation, result.map.width + 1).reverse())
-        result.cliffVariation = convertArrayOfArraysIntoFlatArray(splitLargeArrayIntoWidthArrays(arr_cliffVariation, result.map.width + 1).reverse())
-        result.cliffTexture = convertArrayOfArraysIntoFlatArray(splitLargeArrayIntoWidthArrays(arr_cliffTexture, result.map.width + 1).reverse())
-        result.layerHeight = convertArrayOfArraysIntoFlatArray(splitLargeArrayIntoWidthArrays(arr_layerHeight, result.map.width + 1).reverse())
+        result.groundHeight = convertArrayOfArraysIntoFlatArray(splitLargeArrayIntoWidthArrays(arrGroundHeight, result.map.width + 1).reverse()) as number[][];
+        result.waterHeight = convertArrayOfArraysIntoFlatArray(splitLargeArrayIntoWidthArrays(arrWaterHeight, result.map.width + 1).reverse()) as number[][];
+        result.boundaryFlag = convertArrayOfArraysIntoFlatArray(splitLargeArrayIntoWidthArrays(arrBoundaryFlag, result.map.width + 1).reverse()) as boolean[][];
+        result.flags = convertArrayOfArraysIntoFlatArray(splitLargeArrayIntoWidthArrays(arrFlags, result.map.width + 1).reverse()) as number[];
+        result.groundTexture = convertArrayOfArraysIntoFlatArray(splitLargeArrayIntoWidthArrays(arrGroundTexture, result.map.width + 1).reverse()) as number[][];
+        result.groundVariation = convertArrayOfArraysIntoFlatArray(splitLargeArrayIntoWidthArrays(arrGroundVariation, result.map.width + 1).reverse()) as number[][];
+        result.cliffVariation = convertArrayOfArraysIntoFlatArray(splitLargeArrayIntoWidthArrays(arrCliffVariation, result.map.width + 1).reverse()) as number[][];
+        result.cliffTexture = convertArrayOfArraysIntoFlatArray(splitLargeArrayIntoWidthArrays(arrCliffTexture, result.map.width + 1).reverse()) as number[][];
+        result.layerHeight = convertArrayOfArraysIntoFlatArray(splitLargeArrayIntoWidthArrays(arrLayerHeight, result.map.width + 1).reverse()) as number[][];
 
         return {
             errors: [],

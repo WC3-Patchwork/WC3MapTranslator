@@ -3,7 +3,7 @@ import roundTo from 'round-to';
 export class W3Buffer {
 
     private _offset = 0;
-    private _buffer: Buffer;
+    private readonly _buffer: Buffer;
 
     constructor(buffer: Buffer) {
         this._buffer = buffer;
@@ -28,7 +28,7 @@ export class W3Buffer {
     }
 
     public readString(): string {
-        const string = [];
+        const string: number[] = [];
 
         while (this._buffer[this._offset] !== 0x00) {
             string.push(this._buffer[this._offset]);
@@ -41,9 +41,9 @@ export class W3Buffer {
         }).join('');
     }
 
-    public readChars(len: number = 1): string {
-        const string = [];
-        const numCharsToRead = len || 1;
+    public readChars(len = 1): string {
+        const string: number[] = [];
+        const numCharsToRead = len;
 
         for (let i = 0; i < numCharsToRead; i++) {
             string.push(this._buffer[this._offset]);
@@ -56,7 +56,7 @@ export class W3Buffer {
         }).join('');
     }
 
-    public readByte() {
+    public readByte(): number {
         // TODO what kind of binary? Do we use a BigInt or a node provided type from Buffer?
         const byte = this._buffer[this._offset];
         this._offset += 1;

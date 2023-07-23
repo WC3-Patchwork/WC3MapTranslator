@@ -1,6 +1,7 @@
 import { HexBuffer } from '../HexBuffer';
 import { W3Buffer } from '../W3Buffer';
-import { WarResult, JsonResult, angle } from '../CommonInterfaces'
+import { type WarResult, type JsonResult, type angle } from '../CommonInterfaces';
+import type Translator from './Translator';
 
 interface Unit {
     type: string;
@@ -38,9 +39,28 @@ interface Abilities {
     level: number;
 }
 
-export abstract class UnitsTranslator {
+export class UnitsTranslator implements Translator<Unit[]> {
 
-    public static jsonToWar(unitsJson: Unit[]): WarResult {
+    private static instance: UnitsTranslator;
+
+    private constructor() {}
+
+    public static getInstance() {
+        if (!this.instance) {
+            this.instance = new this();
+        }
+        return this.instance;
+    }
+
+    public static jsonToWar(units: Unit[]): WarResult {
+        return this.getInstance().jsonToWar(units);
+    }
+
+    public static warToJson(buffer: Buffer): JsonResult<Unit[]> {
+        return this.getInstance().warToJson(buffer);
+    }
+
+    public jsonToWar(unitsJson: Unit[]): WarResult {
         const outBufferToWar = new HexBuffer();
 
         /*
@@ -134,14 +154,14 @@ export abstract class UnitsTranslator {
         };
     }
 
-    public static warToJson(buffer: Buffer): JsonResult<Unit[]> {
-        const result = [];
+    public warToJson(buffer: Buffer): JsonResult<Unit[]> {
+        const result: Unit[] = [];
         const outBufferToJSON = new W3Buffer(buffer);
 
-        const fileId = outBufferToJSON.readChars(4), // W3do for doodad file
-            fileVersion = outBufferToJSON.readInt(), // File version = 7
-            subVersion = outBufferToJSON.readInt(), // 0B 00 00 00
-            numUnits = outBufferToJSON.readInt(); // # of units
+        const fileId = outBufferToJSON.readChars(4); // W3do for doodad file
+        const fileVersion = outBufferToJSON.readInt(); // File version = 7
+        const subVersion = outBufferToJSON.readInt(); // 0B 00 00 00
+        const numUnits = outBufferToJSON.readInt(); // # of units
 
         for (let i = 0; i < numUnits; i++) {
             const unit: Unit = {
@@ -181,8 +201,8 @@ export abstract class UnitsTranslator {
             unit.hitpoints = outBufferToJSON.readInt(); // -1 = use default
             unit.mana = outBufferToJSON.readInt(); // -1 = use default, 0 = unit doesn't have mana
 
-            const droppedItemSetPtr = outBufferToJSON.readInt(),
-                numDroppedItemSets = outBufferToJSON.readInt();
+            const droppedItemSetPtr = outBufferToJSON.readInt();
+            const numDroppedItemSets = outBufferToJSON.readInt();
             for (let j = 0; j < numDroppedItemSets; j++) {
                 const numDroppableItems = outBufferToJSON.readInt();
                 for (let k = 0; k < numDroppableItems; k++) {

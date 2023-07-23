@@ -1,6 +1,7 @@
 import { HexBuffer } from '../HexBuffer';
 import { W3Buffer } from '../W3Buffer';
-import { WarResult, JsonResult, angle } from '../CommonInterfaces'
+import { type WarResult, type JsonResult, type angle } from '../CommonInterfaces';
+import type Translator from './Translator';
 
 interface Camera {
     target: CameraTarget;
@@ -19,9 +20,27 @@ interface CameraTarget {
     y: number;
 }
 
-export abstract class CamerasTranslator {
+export class CamerasTranslator implements Translator<Camera[]> {
+    private static instance: CamerasTranslator;
+
+    private constructor() {}
+
+    public static getInstance() {
+        if (!this.instance) {
+            this.instance = new this();
+        }
+        return this.instance;
+    }
 
     public static jsonToWar(cameras: Camera[]): WarResult {
+        return this.getInstance().jsonToWar(cameras);
+    }
+
+    public static warToJson(buffer: Buffer): JsonResult<Camera[]> {
+        return this.getInstance().warToJson(buffer);
+    }
+
+    public jsonToWar(cameras: Camera[]): WarResult {
         const outBufferToWar = new HexBuffer();
 
         /*
@@ -55,12 +74,12 @@ export abstract class CamerasTranslator {
         };
     }
 
-    public static warToJson(buffer: Buffer): JsonResult<Camera[]> {
-        const result = [];
+    public warToJson(buffer: Buffer): JsonResult<Camera[]> {
+        const result: Camera[] = [];
         const outBufferToJSON = new W3Buffer(buffer);
 
-        const fileVersion = outBufferToJSON.readInt(), // File version
-            numCameras = outBufferToJSON.readInt(); // # of cameras
+        const fileVersion = outBufferToJSON.readInt(); // File version
+        const numCameras = outBufferToJSON.readInt(); // # of cameras
 
         for (let i = 0; i < numCameras; i++) {
             const camera: Camera = {
@@ -98,4 +117,5 @@ export abstract class CamerasTranslator {
             json: result
         };
     }
+
 }

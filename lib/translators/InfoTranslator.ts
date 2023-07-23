@@ -1,6 +1,7 @@
 import { HexBuffer } from '../HexBuffer';
 import { W3Buffer } from '../W3Buffer';
-import { WarResult, JsonResult } from '../CommonInterfaces'
+import { type WarResult, type JsonResult } from '../CommonInterfaces';
+import type Translator from './Translator';
 
 interface Map {
     name: string;
@@ -25,25 +26,25 @@ interface Camera {
 }
 
 interface MapFlags {
-    hideMinimapInPreview: boolean;  // 0x0001: 1=hide minimap in preview screens
-    modifyAllyPriorities: boolean;  // 0x0002: 1=modify ally priorities
-    isMeleeMap: boolean;            // 0x0004: 1=melee map
+    hideMinimapInPreview: boolean; // 0x0001: 1=hide minimap in preview screens
+    modifyAllyPriorities: boolean; // 0x0002: 1=modify ally priorities
+    isMeleeMap: boolean; // 0x0004: 1=melee map
     // 0x0008: 1=playable map size was large and has never been reduced to medium (?)
     maskedPartiallyVisible: boolean; // 0x0010: 1=masked area are partially visible
-    fixedPlayerSetting: boolean;    // 0x0020: 1=fixed player setting for custom forces
-    useCustomForces: boolean;       // 0x0040: 1=use custom forces
-    useCustomTechtree: boolean;     // 0x0080: 1=use custom techtree
-    useCustomAbilities: boolean;    // 0x0100: 1=use custom abilities
-    useCustomUpgrades: boolean;     // 0x0200: 1=use custom upgrades
+    fixedPlayerSetting: boolean; // 0x0020: 1=fixed player setting for custom forces
+    useCustomForces: boolean; // 0x0040: 1=use custom forces
+    useCustomTechtree: boolean; // 0x0080: 1=use custom techtree
+    useCustomAbilities: boolean; // 0x0100: 1=use custom abilities
+    useCustomUpgrades: boolean; // 0x0200: 1=use custom upgrades
     // 0x0400: 1=map properties menu opened at least once since map creation (?)
     waterWavesOnCliffShores: boolean; // 0x0800: 1=show water waves on cliff shores
     waterWavesOnRollingShores: boolean; // 0x1000: 1=show water waves on rolling shores
     // 0x2000: 1=unknown
     // 0x4000: 1=unknown
     useItemClassificationSystem: boolean; // 0x8000: 1=use item classification system
-    enableWaterTinting: boolean;        // 0x10000
+    enableWaterTinting: boolean; // 0x10000
     useAccurateProbabilityForCalculations: boolean; // 0x20000
-    useCustomAbilitySkins: boolean;     // 0x40000
+    useCustomAbilitySkins: boolean; // 0x40000
 }
 
 interface LoadingScreen {
@@ -140,9 +141,28 @@ enum SupportedModes {
     Both = 3
 }
 
-export abstract class InfoTranslator {
+export class InfoTranslator implements Translator<Info> {
 
-    public static jsonToWar(infoJson: Info): WarResult {
+    private static instance: InfoTranslator;
+
+    private constructor() {}
+
+    public static getInstance() {
+        if (!this.instance) {
+            this.instance = new this();
+        }
+        return this.instance;
+    }
+
+    public static jsonToWar(info: Info): WarResult {
+        return this.getInstance().jsonToWar(info);
+    }
+
+    public static warToJson(buffer: Buffer): JsonResult<Info> {
+        return this.getInstance().warToJson(buffer);
+    }
+
+    public jsonToWar(infoJson: Info): WarResult {
         const outBufferToWar = new HexBuffer();
 
         outBufferToWar.addInt(31); // file version, 0x1F
@@ -194,10 +214,10 @@ export abstract class InfoTranslator {
             if (infoJson.map.flags.waterWavesOnRollingShores) flags |= 0x1000; // show water waves on rolling shores
             // 0x2000: 1=unknown
             // 0x4000: 1=unknown
-            if (infoJson.map.flags.useItemClassificationSystem) flags |= 0x8000
-            if (infoJson.map.flags.enableWaterTinting) flags |= 0x10000
-            if (infoJson.map.flags.useAccurateProbabilityForCalculations) flags |= 0x20000
-            if (infoJson.map.flags.useCustomAbilitySkins) flags |= 0x40000
+            if (infoJson.map.flags.useItemClassificationSystem) flags |= 0x8000;
+            if (infoJson.map.flags.enableWaterTinting) flags |= 0x10000;
+            if (infoJson.map.flags.useAccurateProbabilityForCalculations) flags |= 0x20000;
+            if (infoJson.map.flags.useCustomAbilitySkins) flags |= 0x40000;
         }
 
         // Unknown, but these seem to always be on, at least for default maps
@@ -307,7 +327,7 @@ export abstract class InfoTranslator {
         };
     }
 
-    public static warToJson(buffer: Buffer): JsonResult<Info> {
+    public warToJson(buffer: Buffer): JsonResult<Info> {
         const result: Info = {
             map: {
                 name: '',
@@ -345,23 +365,28 @@ export abstract class InfoTranslator {
                 text: '',
                 title: '',
                 subtitle: ''
-            }, prologue: {
+            },
+            prologue: {
                 path: '',
                 text: '',
                 title: '',
                 subtitle: ''
-            }, fog: {
+            },
+            fog: {
                 type: FogType.Linear,
                 startHeight: 0,
                 endHeight: 0,
                 density: 0,
                 color: [0, 0, 0, 1]
-            }, camera: {
+            },
+            camera: {
                 bounds: [],
                 complements: []
-            }, players: [
+            },
+            players: [
 
-            ], forces: [
+            ],
+            forces: [
 
             ],
             saves: 0,
@@ -383,7 +408,7 @@ export abstract class InfoTranslator {
 
         const fileVersion = outBufferToJSON.readInt();
 
-        result.saves = outBufferToJSON.readInt(),
+        result.saves = outBufferToJSON.readInt();
         result.editorVersion = outBufferToJSON.readInt();
 
         result.gameVersion = {

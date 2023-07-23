@@ -1,30 +1,35 @@
-const ieee754 = require('ieee754'),
-    IntN = require('intn'),
-    intToHex = (intV: number, isShort: boolean): string[] => {
-        // Creates a new 32-bit integer from the given number
-        const intSize = isShort ? 16 : 32;
-        const intNSize = new IntN(intSize);
-        const byteNum = intNSize.fromInt(intV).bytes;
+import ieee754 from 'ieee754';
+import IntN from 'intn';
 
-        // Map decimal bytes to hex bytes
-        // Bytes are already in correct little-endian form
-        return byteNum.map((Byte) => {
-            return '0x' + Byte.toString(16);
-        });
-    },
-    charToHex = (character: string): string => {
-        return '0x' + character.charCodeAt(0).toString(16);
-    };
+const intToHex = (intV: number, isShort: boolean): string[] => {
+    // Creates a new 32-bit integer from the given number
+    const intSize = isShort ? 16 : 32;
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
+    const intNSize = new IntN(intSize);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+    const byteNum = intNSize.fromInt(intV).bytes;
+
+    // Map decimal bytes to hex bytes
+    // Bytes are already in correct little-endian form
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+    return byteNum.map((Byte: number) => {
+        return '0x' + Byte.toString(16);
+    });
+};
+const charToHex = (character: string): string => {
+    return '0x' + character.charCodeAt(0).toString(16);
+};
 
 export class HexBuffer {
-    private _buffer = [];
+    private readonly _buffer: string[] = [];
 
     public addString(str: string) {
         // Write each char to the buffer
         // "ascii" | "utf8" | "utf-8" | "utf16le" | "ucs2"
         // | "ucs-2" | "base64" | "latin1" | "binary" | "hex"
         const buf = Buffer.from(str, 'utf-8');
-        // tslint:disable-next-line: prefer-for-of
+
         for (let i = 0; i < buf.length; i++) {
             this._buffer.push('0x' + buf[i].toString(16));
         }
@@ -46,10 +51,8 @@ export class HexBuffer {
         });
     }
 
-    public addInt(int: number, isShort: boolean = false) {
-        intToHex(int, isShort).forEach((Byte) => {
-            this._buffer.push(Byte);
-        });
+    public addInt(int: number, isShort = false) {
+        this._buffer.push(...intToHex(int, isShort));
     }
 
     public addShort(short: number) {
@@ -67,15 +70,15 @@ export class HexBuffer {
         });
     }
 
-    public addByte(byte) {
+    public addByte(byte: number) {
         this._buffer.push('0x' + byte.toString(16));
     }
 
-    public addNullTerminator()  {
+    public addNullTerminator() {
         this._buffer.push('0x0');
     }
 
     public getBuffer(): Buffer {
-        return Buffer.from(this._buffer);
+        return Buffer.from(this._buffer as unknown as WithImplicitCoercion<string>, 'hex');
     }
 }
