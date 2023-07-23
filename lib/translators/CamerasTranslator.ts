@@ -1,7 +1,7 @@
 import { HexBuffer } from '../HexBuffer';
 import { W3Buffer } from '../W3Buffer';
 import { type WarResult, type JsonResult } from '../CommonInterfaces';
-import type Translator from './Translator';
+import { Translator } from './Translator';
 import { Camera } from '../data/Camera';
 
 export class CamerasTranslator implements Translator<Camera[]> {

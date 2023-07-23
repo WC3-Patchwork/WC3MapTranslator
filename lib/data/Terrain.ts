@@ -3,7 +3,7 @@ interface Terrain {
     customTileset: boolean;
     tilePalette: string[];
     cliffTilePalette: string[];
-    map: Map;
+    map: MapSize;
     // "Masks"
     groundHeight: number[][],
     waterHeight: number[][],
@@ -16,7 +16,7 @@ interface Terrain {
     layerHeight: number[][]
 }
 
-interface Map {
+interface MapSize {
     width: number;
     height: number;
     offset: Offset;
@@ -27,4 +27,4 @@ interface Offset {
     y: number;
 }
 
-export {Terrain, Map, Offset}
+export {Terrain, MapSize, Offset}

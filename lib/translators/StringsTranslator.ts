@@ -1,6 +1,6 @@
 import { HexBuffer } from '../HexBuffer';
 import { type WarResult, type JsonResult } from '../CommonInterfaces';
-import type Translator from './Translator';
+import { Translator } from './Translator';
 
 export class StringsTranslator implements Translator<{[id: string]: string}> {
 

@@ -2,7 +2,7 @@ import { HexBuffer } from '../HexBuffer';
 import { W3Buffer } from '../W3Buffer';
 import { rad2Deg, deg2Rad } from '../AngleConverter';
 import { type WarResult, type JsonResult, type angle } from '../CommonInterfaces';
-import type Translator from './Translator';
+import { Translator } from './Translator';
 import { Doodad } from '../data/Doodad';
 
 enum flag {

@@ -1,3 +1,4 @@
+export * from './Translator';
 export * from './CamerasTranslator';
 export * from './DoodadsTranslator';
 export * from './ImportsTranslator';

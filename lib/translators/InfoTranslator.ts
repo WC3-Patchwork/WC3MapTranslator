@@ -1,7 +1,7 @@
 import { HexBuffer } from '../HexBuffer';
 import { W3Buffer } from '../W3Buffer';
 import { type WarResult, type JsonResult } from '../CommonInterfaces';
-import type Translator from './Translator';
+import { Translator } from './Translator';
 import { FogType, Force, Info, Player, ScriptLanguage, SupportedModes } from '../data/Info';
 
 export class InfoTranslator implements Translator<Info> {

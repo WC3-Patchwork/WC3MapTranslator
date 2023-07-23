@@ -1,8 +1,8 @@
 import { HexBuffer } from '../HexBuffer';
 import { W3Buffer } from '../W3Buffer';
 import { type WarResult, type JsonResult, type angle } from '../CommonInterfaces';
-import type Translator from './Translator';
 import { Unit } from '../data/Unit';
+import { Translator } from './Translator';
 
 export class UnitsTranslator implements Translator<Unit[]> {
 
