@@ -2,16 +2,7 @@ import { HexBuffer } from '../HexBuffer';
 import { W3Buffer } from '../W3Buffer';
 import { type WarResult, type JsonResult } from '../CommonInterfaces';
 import type Translator from './Translator';
-
-enum ImportType {
-    Standard = 'standard',
-    Custom = 'custom'
-}
-
-interface Import {
-    path: string;
-    type: ImportType;
-}
+import { ImportType, Import } from '../data/Import';
 
 const typeEnum = {
     0: ImportType.Standard,

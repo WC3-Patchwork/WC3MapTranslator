@@ -3,23 +3,7 @@ import { W3Buffer } from '../W3Buffer';
 import { rad2Deg, deg2Rad } from '../AngleConverter';
 import { type WarResult, type JsonResult, type angle } from '../CommonInterfaces';
 import type Translator from './Translator';
-
-interface Doodad {
-    type: string;
-    variation: number;
-    position: number[];
-    angle: angle;
-    scale: number[];
-    skinId: string;
-    flags: DoodadFlag;
-    life: number;
-    id: number;
-}
-
-interface DoodadFlag {
-    visible: boolean;
-    solid: boolean;
-}
+import { Doodad } from '../data/Doodad';
 
 enum flag {
     // 0= invisible and non-solid tree
@@ -155,8 +139,8 @@ export class DoodadsTranslator implements Translator<Doodad[]> {
 
             const flags: flag = outBufferToJSON.readByte();
             doodad.flags = {
-                visible: flags === 1 || flags === 2,
-                solid: flags === 2
+                visible: flags === flag.visible || flags === flag.solid,
+                solid: flags === flag.solid
             };
 
             doodad.life = outBufferToJSON.readByte(); // as a %

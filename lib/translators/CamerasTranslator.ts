@@ -1,24 +1,8 @@
 import { HexBuffer } from '../HexBuffer';
 import { W3Buffer } from '../W3Buffer';
-import { type WarResult, type JsonResult, type angle } from '../CommonInterfaces';
+import { type WarResult, type JsonResult } from '../CommonInterfaces';
 import type Translator from './Translator';
-
-interface Camera {
-    target: CameraTarget;
-    offsetZ: number;
-    rotation: angle;
-    aoa: angle; // angle of attack
-    distance: number;
-    roll: number;
-    fov: angle; // field of view
-    farClipping: number;
-    name: string;
-}
-
-interface CameraTarget {
-    x: number;
-    y: number;
-}
+import { Camera } from '../data/Camera';
 
 export class CamerasTranslator implements Translator<Camera[]> {
     private static instance: CamerasTranslator;

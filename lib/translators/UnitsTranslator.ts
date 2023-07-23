@@ -2,42 +2,7 @@ import { HexBuffer } from '../HexBuffer';
 import { W3Buffer } from '../W3Buffer';
 import { type WarResult, type JsonResult, type angle } from '../CommonInterfaces';
 import type Translator from './Translator';
-
-interface Unit {
-    type: string;
-    variation: number;
-    position: number[];
-    rotation: angle;
-    scale: number[];
-    hero: Hero;
-    inventory: Inventory[];
-    abilities: Abilities[];
-    player: number;
-    hitpoints: number;
-    mana: number;
-    gold: number;
-    targetAcquisition: number; // (-1 = normal, -2 = camp),
-    color: number;
-    id: number;
-}
-
-interface Hero {
-    level: number;
-    str: number;
-    agi: number;
-    int: number;
-}
-
-interface Inventory {
-    slot: number; // the int is 0-based, but json format wants 1-6
-    type: string; // Item ID
-}
-
-interface Abilities {
-    ability: string; // Ability ID
-    active: boolean; // autocast active? 0=no, 1=active
-    level: number;
-}
+import { Unit } from '../data/Unit';
 
 export class UnitsTranslator implements Translator<Unit[]> {
 

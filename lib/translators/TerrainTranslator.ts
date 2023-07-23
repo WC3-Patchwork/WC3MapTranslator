@@ -2,35 +2,7 @@ import { HexBuffer } from '../HexBuffer';
 import { W3Buffer } from '../W3Buffer';
 import { type WarResult, type JsonResult } from '../CommonInterfaces';
 import type Translator from './Translator';
-
-interface Terrain {
-    tileset: string;
-    customTileset: boolean;
-    tilePalette: string[];
-    cliffTilePalette: string[];
-    map: Map;
-    // "Masks"
-    groundHeight: number[][],
-    waterHeight: number[][],
-    boundaryFlag: boolean[][],
-    flags: number[],
-    groundTexture: number[][],
-    groundVariation: number[][],
-    cliffVariation: number[][],
-    cliffTexture: number[][],
-    layerHeight: number[][]
-}
-
-interface Map {
-    width: number;
-    height: number;
-    offset: Offset;
-}
-
-interface Offset {
-    x: number;
-    y: number;
-}
+import { Terrain } from '../data/Terrain';
 
 function splitLargeArrayIntoWidthArrays(array: unknown[], width: number) {
     const rows: unknown[][] = [];

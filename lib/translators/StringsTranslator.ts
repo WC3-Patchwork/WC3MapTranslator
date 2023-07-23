@@ -2,7 +2,7 @@ import { HexBuffer } from '../HexBuffer';
 import { type WarResult, type JsonResult } from '../CommonInterfaces';
 import type Translator from './Translator';
 
-export class StringsTranslator implements Translator<object> {
+export class StringsTranslator implements Translator<{[id: string]: string}> {
 
     private static instance: StringsTranslator;
 
@@ -15,7 +15,7 @@ export class StringsTranslator implements Translator<object> {
         return this.instance;
     }
 
-    public static jsonToWar(string: object): WarResult {
+    public static jsonToWar(string: {[id: string]: string}): WarResult {
         return this.getInstance().jsonToWar(string);
     }
 
@@ -23,7 +23,7 @@ export class StringsTranslator implements Translator<object> {
         return this.getInstance().warToJson(buffer);
     }
 
-    public jsonToWar(stringsJson: object): WarResult {
+    public jsonToWar(stringsJson: {[id: string]: string}): WarResult {
         const outBufferToWar = new HexBuffer();
 
         /*
@@ -47,7 +47,7 @@ export class StringsTranslator implements Translator<object> {
         };
     }
 
-    public warToJson(buffer: Buffer): JsonResult<object> {
+    public warToJson(buffer: Buffer): JsonResult<{[id: string]: string}> {
         const wts = buffer.toString().replace(/\r\n/g, '\n'); // may contain Windows linebreaks (\r\n), but below regex just assumes \n
         const matchStringDefinitionBlock = /STRING ([0-9]+)\n?(?:.*\n)?{\n((?:.|\n)*?)\n}/g; // see: https://regexr.com/3r572
 
