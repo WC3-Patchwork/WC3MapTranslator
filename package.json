@@ -14,7 +14,6 @@
         "w3x"
     ],
     "main": "index.js",
-    "type": "commonjs",
     "scripts": {
         "build": "tsc --build",
         "test": "npm run build && mocha",
