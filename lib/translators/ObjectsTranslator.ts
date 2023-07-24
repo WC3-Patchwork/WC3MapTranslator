@@ -164,40 +164,53 @@ export class ObjectsTranslator implements Translator<ObjectModificationTable> {
 
                 const originalId = outBufferToJSON.readChars(4);
                 const customId = outBufferToJSON.readChars(4);
-                const modificationCount = outBufferToJSON.readInt();
-
-                for (let j = 0; j < modificationCount; j++) {
-                    const modification: Modification = {
-                        id: '',
-                        type: ModificationType.string,
-                        level: 0,
-                        column: 0,
-                        value: {}
-                    };
-
-                    modification.id = outBufferToJSON.readChars(4);
-                    modification.type = ObjectsTranslator.varTypes[outBufferToJSON.readInt()] as unknown as ModificationType; // 'int' | 'real' | 'unreal' | 'string',
-
-                    if (this.type === ObjectType.Doodads || this.type === ObjectType.Abilities || this.type === ObjectType.Upgrades) {
-                        modification.level = outBufferToJSON.readInt();
-                        modification.column = outBufferToJSON.readInt();
+                let sets: number;
+                if (fileVersion >= 3){
+                    sets = outBufferToJSON.readInt();
+                } else {
+                    sets = 1
+                }
+                
+                for(let j = 0; j <sets; j++){
+                    if (fileVersion >= 3){
+                        const setFlag = outBufferToJSON.readInt()
                     }
+                    const modificationCount = outBufferToJSON.readInt();
 
-                    if (modification.type === 'int') {
-                        modification.value = outBufferToJSON.readInt();
-                    } else if (modification.type === 'real' || modification.type === 'unreal') {
-                        modification.value = outBufferToJSON.readFloat();
-                    } else { // modification.type === 'string'
-                        modification.value = outBufferToJSON.readString();
+                    for (let k = 0; k < modificationCount; k++) {
+                        const modification: Modification = {
+                            id: '',
+                            type: ModificationType.string,
+                            level: 0,
+                            column: 0,
+                            value: {}
+                        };
+    
+                        modification.id = outBufferToJSON.readChars(4);
+                        modification.type = ObjectsTranslator.varTypes[outBufferToJSON.readInt()] as unknown as ModificationType; // 'int' | 'real' | 'unreal' | 'string',
+    
+                        if (this.type === ObjectType.Doodads || this.type === ObjectType.Abilities || this.type === ObjectType.Upgrades) {
+                            modification.level = outBufferToJSON.readInt();
+                            modification.column = outBufferToJSON.readInt();
+                        }
+    
+                        if (modification.type === 'int') {
+                            modification.value = outBufferToJSON.readInt();
+                        } else if (modification.type === 'real' || modification.type === 'unreal') {
+                            modification.value = outBufferToJSON.readFloat();
+                        } else { // modification.type === 'string'
+                            modification.value = outBufferToJSON.readString();
+                        }
+    
+                        if (isOriginalTable) {
+                            outBufferToJSON.readInt(); // should be 0 for original objects
+                        } else {
+                            outBufferToJSON.readChars(4); // should be object ID for custom objects
+                        }
+    
+                        objectDefinition.push(modification);
                     }
-
-                    if (isOriginalTable) {
-                        outBufferToJSON.readInt(); // should be 0 for original objects
-                    } else {
-                        outBufferToJSON.readChars(4); // should be object ID for custom objects
-                    }
-
-                    objectDefinition.push(modification);
+    
                 }
 
                 if (isOriginalTable) {

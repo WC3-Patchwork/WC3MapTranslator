@@ -6,6 +6,7 @@ interface Unit {
     position: number[];
     rotation: angle;
     scale: number[];
+    skin: string;
     hero: Hero;
     inventory: Inventory[];
     abilities: Abilities[];

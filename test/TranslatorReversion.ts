@@ -5,7 +5,6 @@ import * as Path from 'path';
 
 import * as Translator from '../index';
 
-const ObjectType = Translator.ObjectsTranslator.ObjectType;
 const war3mapDir = Path.resolve('test/data');
 const outputDir = Path.resolve('test/.output');
 

@@ -32,7 +32,7 @@ export class UnitsTranslator implements Translator<Unit[]> {
          * Header
          */
         outBufferToWar.addChars('W3do');
-        outBufferToWar.addInt(8);
+        outBufferToWar.addInt(9);
         outBufferToWar.addInt(11);
         outBufferToWar.addInt(unitsJson.length); // number of units
 
@@ -52,10 +52,10 @@ export class UnitsTranslator implements Translator<Unit[]> {
             outBufferToWar.addFloat(unit.scale[1] || 1); // scale y
             outBufferToWar.addFloat(unit.scale[2] || 1); // scale z
 
+            outBufferToWar.addChars(unit.skin);
+
             // Unit flags
             outBufferToWar.addByte(0); // UNSUPPORTED: flags
-
-            outBufferToWar.addInt(0); // unknown
 
             outBufferToWar.addInt(unit.player); // player #
             outBufferToWar.addByte(0); // (byte unknown - 0)
@@ -136,6 +136,7 @@ export class UnitsTranslator implements Translator<Unit[]> {
                 rotation: 0,
                 scale: [0, 0, 0],
                 hero: { level: 1, str: 1, agi: 1, int: 1 },
+                skin: '',
                 inventory: [],
                 abilities: [],
                 player: 0,
@@ -153,11 +154,14 @@ export class UnitsTranslator implements Translator<Unit[]> {
             unit.rotation = outBufferToJSON.readFloat();
             unit.scale = [outBufferToJSON.readFloat(), outBufferToJSON.readFloat(), outBufferToJSON.readFloat()]; // X Y Z scaling
 
+            if (fileVersion > 7){
+                unit.skin = outBufferToJSON.readChars(4);
+            } else { //default unit's skin - Note: Probably fails for items?
+                unit.skin = unit.type
+            }
+
             // UNSUPPORTED: flags
             const flags = outBufferToJSON.readByte();
-
-            outBufferToJSON.readInt(); // Unknown
-
             unit.player = outBufferToJSON.readInt(); // (player1 = 0, 16=neutral passive); note: wc3 patch now has 24 max players
 
             outBufferToJSON.readByte(); // unknown
@@ -166,7 +170,9 @@ export class UnitsTranslator implements Translator<Unit[]> {
             unit.hitpoints = outBufferToJSON.readInt(); // -1 = use default
             unit.mana = outBufferToJSON.readInt(); // -1 = use default, 0 = unit doesn't have mana
 
-            const droppedItemSetPtr = outBufferToJSON.readInt();
+            if (subVersion != 9){ //not RoC
+                const droppedItemSetPtr = outBufferToJSON.readInt();
+            }
             const numDroppedItemSets = outBufferToJSON.readInt();
             for (let j = 0; j < numDroppedItemSets; j++) {
                 const numDroppableItems = outBufferToJSON.readInt();
@@ -181,10 +187,15 @@ export class UnitsTranslator implements Translator<Unit[]> {
 
             unit.hero = {
                 level: outBufferToJSON.readInt(), // non-hero units = 1
-                str: outBufferToJSON.readInt(),
-                agi: outBufferToJSON.readInt(),
-                int: outBufferToJSON.readInt()
+                str: 0,
+                agi: 0,
+                int: 0
             };
+            if (subVersion != 9){ //not RoC
+                unit.hero.str = outBufferToJSON.readInt();
+                unit.hero.agi = outBufferToJSON.readInt();
+                unit.hero.int = outBufferToJSON.readInt();
+            }
 
             const numItemsInventory = outBufferToJSON.readInt();
             for (let j = 0; j < numItemsInventory; j++) {
