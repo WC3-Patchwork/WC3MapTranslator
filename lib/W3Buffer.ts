@@ -28,7 +28,7 @@ export class W3Buffer {
     }
 
     public readString(): string {
-        const string: number[] = [];
+        const string: number[] = []
 
         while (this._buffer[this._offset] !== 0x00) {
             string.push(this._buffer[this._offset]);
@@ -36,9 +36,7 @@ export class W3Buffer {
         }
         this._offset += 1; // consume the \0 end-of-string delimiter
 
-        return string.map((ch) => {
-            return String.fromCharCode(ch);
-        }).join('');
+        return Buffer.from(string as unknown as WithImplicitCoercion<ArrayBuffer>).toString()
     }
 
     public readChars(len = 1): string {
